@@ -7,6 +7,9 @@
     <!-- Color of the UDFPS pressed view -->
     <color name="config_udfpsColor">#ffffffff</color>
 
+    <!-- Udfps vendor code -->
+    <integer name="config_udfpsVendorCode">0</integer>
+
     <!-- Whether to enable framework dimming for UDFPS -->
     <bool name="config_udfpsFrameworkDimming">false</bool>
 
