@@ -7421,6 +7421,16 @@ public final class Settings {
         public static final String BACK_SWIPE_EXTENDED = "back_swipe_extended";
 
         /**
+         * @hide
+         */
+        public static final String LOCKSCREEN_WEATHER_ENABLED = "lockscreen_weather_enabled";
+
+        /**
+         * @hide
+         */
+        public static final String LOCKSCREEN_WEATHER_LOCATION = "lockscreen_weather_location";
+
+        /**
          * Gestures nav: left long back swipe action
          * @hide
          */
