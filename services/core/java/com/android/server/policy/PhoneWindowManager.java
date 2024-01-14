@@ -833,6 +833,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private CameraAvailbilityListener mCameraAvailabilityListener;
 
+    private CameraAvailbilityListener mCameraAvailabilityListener;
+
     private class PolicyHandler extends Handler {
 
         private PolicyHandler(Looper looper) {
@@ -7878,6 +7880,31 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return DEFAULT_DISPLAY;
         } else {
             return displayId;
+        }
+    }
+
+    private class CameraAvailbilityListener extends CameraManager.AvailabilityCallback {
+        private final Set<String> mCameraInUse = Collections.synchronizedSet(new HashSet<>());
+
+        @Override
+        public void onCameraAvailable(String cameraId) {
+            mCameraInUse.remove(cameraId);
+        }
+
+        @Override
+        public void onCameraUnavailable(String cameraId) {
+            try {
+                // check if the camera id is still valid
+                mCameraManager.getCameraCharacteristics(cameraId);
+            } catch (Exception e) {
+                // camera id is no longer valid, ignore
+                return;
+            }
+            mCameraInUse.add(cameraId);
+        }
+
+        public boolean isAnyCameraInUse() {
+            return !mCameraInUse.isEmpty();
         }
     }
 
