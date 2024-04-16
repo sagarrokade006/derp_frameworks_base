@@ -498,6 +498,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         filter.addAction(Intent.ACTION_PROFILE_ADDED);
         filter.addAction(Intent.ACTION_WALLPAPER_CHANGED);
         filter.addAction(Intent.ACTION_PARALLEL_SPACE_CHANGED);
+        mThemeController.observe("qs_panel_tile_haptic", true /* system */, () -> reevaluateSystemTheme(true));
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, mMainExecutor,
                 UserHandle.ALL);
         mSecureSettings.registerContentObserverForUser(
