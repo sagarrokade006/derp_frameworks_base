@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+'<?xml version="1.0" encoding="utf-8"?>
 <!--
 /*
 ** Copyright 2009, The Android Open Source Project
@@ -101,7 +101,7 @@
 
     <!-- Tiles native to System UI. Order should match "quick_settings_tiles_default" -->
     <string name="quick_settings_tiles_stock" translatable="false">
-internet,wifi,cell,bt,flashlight,dnd,alarm,airplane,nfc,controls,wallet,rotation,battery,cast,screenrecord,mictoggle,cameratoggle,location,hotspot,inversion,saver,dark,work,night,reverse,reduce_brightness,qr_code_scanner,onehanded,color_correction,dream,font_scaling,record_issue,ambient_display,aod,caffeine,compass,dataswitch,derpspace,heads_up,locale,reading_mode,screenshot,sound,soundsearch,sync,powershare,usb_tether,vpn,vpn_tethering
+internet,wifi,cell,bt,flashlight,dnd,alarm,airplane,nfc,controls,wallet,rotation,battery,cast,screenrecord,mictoggle,cameratoggle,location,hotspot,inversion,saver,dark,work,night,reverse,reduce_brightness,qr_code_scanner,onehanded,color_correction,dream,font_scaling,record_issue,ambient_display,aod,caffeine,compass,dataswitch,derpspace,heads_up,locale,reading_mode,screenshot,sound,soundsearch,sync,powershare,usb_tether,vpn,vpn_tethering,weather
     </string>
 
     <!-- The tiles to display in QuickSettings -->
