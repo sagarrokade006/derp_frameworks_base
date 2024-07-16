@@ -36,6 +36,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.media.AudioManager;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -149,34 +150,39 @@ public class derpUtils {
                 .setMessage(R.string.system_restart_message)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        restartAndroid(context);
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> restartSystem(context), 2000);
                     }
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
-    public static void restartAndroid(Context context) {
-        new restartAndroidTask(context).execute();
+    public static void restartSystem(Context context) {
+        new RestartSystemTask(context).execute();
     }
 
-    private static class restartAndroidTask extends AsyncTask<Void, Void, Void> {
+    private static class RestartSystemTask extends AsyncTask<Void, Void, Void> {
+        private final WeakReference<Context> mContext;
 
-        public restartAndroidTask(Context context) {
+        public RestartSystemTask(Context context) {
             super();
+            mContext = new WeakReference<>(context);
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-          IStatusBarService mBarService = IStatusBarService.Stub.asInterface(
-                ServiceManager.getService(Context.STATUS_BAR_SERVICE));
             try {
-                 try {
-                   Thread.sleep(1000);
-               } catch (InterruptedException e) {}
-                  try {
-                     mBarService.reboot(false, null);
-                   } catch (RemoteException e) {}
+                IStatusBarService mBarService = IStatusBarService.Stub.asInterface(
+                        ServiceManager.getService(Context.STATUS_BAR_SERVICE));
+                if (mBarService != null) {
+                    try {
+                        Thread.sleep(2000);
+                        mBarService.reboot(false, null);
+                    } catch (RemoteException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -190,7 +196,8 @@ public class derpUtils {
                 .setMessage(R.string.settings_restart_message)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        restartSettings(context);
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> restartSettings(context), 2000);
                     }
                 })
                 .setNegativeButton(R.string.cancel, null)
@@ -198,13 +205,13 @@ public class derpUtils {
     }
 
     public static void restartSettings(Context context) {
-        new restartSettingsTask(context).execute();
+        new RestartSettingsTask(context).execute();
     }
 
-    private static class restartSettingsTask extends AsyncTask<Void, Void, Void> {
-        private WeakReference<Context> mContext;
+    private static class RestartSettingsTask extends AsyncTask<Void, Void, Void> {
+        private final WeakReference<Context> mContext;
 
-        public restartSettingsTask(Context context) {
+        public RestartSettingsTask(Context context) {
             super();
             mContext = new WeakReference<>(context);
         }
@@ -212,13 +219,60 @@ public class derpUtils {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                ActivityManager am =
-                        (ActivityManager) mContext.get().getSystemService(Context.ACTIVITY_SERVICE);
-                IActivityManager ams = ActivityManager.getService();
-                for (ActivityManager.RunningAppProcessInfo app: am.getRunningAppProcesses()) {
-                    if ("com.android.settings".equals(app.processName)) {
-                    	ams.killApplicationProcess(app.processName, app.uid);
-                        break;
+                ActivityManager am = (ActivityManager) mContext.get().getSystemService(Context.ACTIVITY_SERVICE);
+                if (am != null) {
+                    IActivityManager ams = ActivityManager.getService();
+                    for (ActivityManager.RunningAppProcessInfo app : am.getRunningAppProcesses()) {
+                        if ("com.android.settings".equals(app.processName)) {
+                            ams.killApplicationProcess(app.processName, app.uid);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    public static void showSystemUIRestartDialog(Context context) {
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.systemui_restart_title)
+                .setMessage(R.string.systemui_restart_message)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> restartSystemUI(context), 2000);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    public static void restartSystemUI(Context context) {
+        new RestartSystemUITask(context).execute();
+    }
+
+    private static class RestartSystemUITask extends AsyncTask<Void, Void, Void> {
+        private final WeakReference<Context> mContext;
+
+        public RestartSystemUITask(Context context) {
+            super();
+            mContext = new WeakReference<>(context);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                ActivityManager am = (ActivityManager) mContext.get().getSystemService(Context.ACTIVITY_SERVICE);
+                if (am != null) {
+                    IActivityManager ams = ActivityManager.getService();
+                    for (ActivityManager.RunningAppProcessInfo app : am.getRunningAppProcesses()) {
+                        if ("com.android.systemui".equals(app.processName)) {
+                            ams.killApplicationProcess(app.processName, app.uid);
+                            break;
+                        }
                     }
                 }
             } catch (Exception e) {
