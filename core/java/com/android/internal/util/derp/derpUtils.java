@@ -20,28 +20,36 @@ package com.android.internal.util.derp;
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static android.content.Context.VIBRATOR_SERVICE;
 
+import android.app.AlertDialog;
+import android.app.IActivityManager;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.content.DialogInterface;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.view.IWindowManager;
 import android.view.WindowManagerGlobal;
 
+import com.android.internal.R;
 import com.android.internal.statusbar.IStatusBarService;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Locale;
 import java.util.ArrayList;
@@ -133,6 +141,91 @@ public class derpUtils {
     }
     public static void toggleQsPanel() {
         FireActions.toggleQsPanel();
+    }
+
+    public static void showSystemRestartDialog(Context context) {
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.system_restart_title)
+                .setMessage(R.string.system_restart_message)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        restartAndroid(context);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    public static void restartAndroid(Context context) {
+        new restartAndroidTask(context).execute();
+    }
+
+    private static class restartAndroidTask extends AsyncTask<Void, Void, Void> {
+
+        public restartAndroidTask(Context context) {
+            super();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+          IStatusBarService mBarService = IStatusBarService.Stub.asInterface(
+                ServiceManager.getService(Context.STATUS_BAR_SERVICE));
+            try {
+                 try {
+                   Thread.sleep(1000);
+               } catch (InterruptedException e) {}
+                  try {
+                     mBarService.reboot(false, null);
+                   } catch (RemoteException e) {}
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+   public static void showSettingsRestartDialog(Context context) {
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.settings_restart_title)
+                .setMessage(R.string.settings_restart_message)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        restartSettings(context);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    public static void restartSettings(Context context) {
+        new restartSettingsTask(context).execute();
+    }
+
+    private static class restartSettingsTask extends AsyncTask<Void, Void, Void> {
+        private WeakReference<Context> mContext;
+
+        public restartSettingsTask(Context context) {
+            super();
+            mContext = new WeakReference<>(context);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                ActivityManager am =
+                        (ActivityManager) mContext.get().getSystemService(Context.ACTIVITY_SERVICE);
+                IActivityManager ams = ActivityManager.getService();
+                for (ActivityManager.RunningAppProcessInfo app: am.getRunningAppProcesses()) {
+                    if ("com.android.settings".equals(app.processName)) {
+                    	ams.killApplicationProcess(app.processName, app.uid);
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 
     // Launch camera
